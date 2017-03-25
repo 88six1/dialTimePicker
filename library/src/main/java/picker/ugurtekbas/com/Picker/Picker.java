@@ -47,6 +47,7 @@ public class Picker extends View {
     private String hStr, mStr, amPmStr;
 
     private TimeChangedListener timeListener;
+    private TouchEventListener touchEventListener;
 
     public Picker(Context context) {
         this(context, null);
@@ -273,6 +274,9 @@ public class Picker extends View {
                 }
                 break;
             case MotionEvent.ACTION_UP:
+                if (touchEventListener != null) {
+                    touchEventListener.touchEventEnded();
+                }
             case MotionEvent.ACTION_CANCEL:
                 isMoving = false;
                 invalidate();
@@ -381,6 +385,10 @@ public class Picker extends View {
         this.timeListener = timeChangedListener;
     }
 
+
+    public void setTouchEventListener(TouchEventListener touchEventListener) {
+        this.touchEventListener = touchEventListener;
+    }
     /**
      * This method is used to set picker's time
      * @param hour

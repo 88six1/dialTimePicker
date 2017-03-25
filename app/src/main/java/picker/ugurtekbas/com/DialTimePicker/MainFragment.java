@@ -3,6 +3,7 @@ package picker.ugurtekbas.com.DialTimePicker;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,12 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import picker.ugurtekbas.com.Picker.Picker;
+import picker.ugurtekbas.com.Picker.TimeChangedListener;
+import picker.ugurtekbas.com.Picker.TouchEventListener;
 
 /**
  * For sample app, his controls two fragments with different time pickers.
@@ -53,6 +59,30 @@ public class MainFragment extends Fragment{
             picker2.setTime(12, 45, Picker.AM);
             picker2.setTrackSize(20);
             picker2.setDialRadiusDP(60);
+
+            picker2.setTouchEventListener(new TouchEventListener() {
+                @Override
+                public void touchEventEnded() {
+                    Log.d("TOUCH EVENT ENDED", "ENDED");
+                }
+            });
+            picker2.setTimeChangedListener(new TimeChangedListener() {
+                @Override
+                public void timeChanged(Date date) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(date);
+                    int minutes = calendar.get(Calendar.MINUTE);
+
+                  /* int minPart = 15-(minutes%15);
+                    if(minPart > 0) {
+                        calendar.add(Calendar.MINUTE, minPart % 60);
+
+                        picker2.setTime(calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE));
+                    }
+                    */
+                }
+            });
+
 
             final CheckBox checkBox =   (CheckBox)v.findViewById(R.id.checkbox);
             picker2.setEnabled(checkBox.isChecked());
