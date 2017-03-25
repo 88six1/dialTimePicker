@@ -14,6 +14,9 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -36,14 +39,15 @@ public class Picker extends View {
     public static final boolean PM = false;
 
     private float min, radius, dialRadius, offset, slopX, slopY, dialX, dialY;
-    private int hour, minutes, previousHour;
+    private Calendar myDate;
+    private int month, day, year, hour, minutes, previousHour, mypreviousHour;
     private int textColor = Color.BLACK;
     private int clockColor = Color.parseColor("#0f9280");
     private int dialColor = Color.parseColor("#FF9F5B");
     private int canvasColor = Color.TRANSPARENT;
     private int trackSize = -1, dialRadiusDP = -1;
     private double angle, degrees;
-    private boolean isMoving, amPm, disableTouch, hourFormat, firstRun = true, manuelAdjust;
+    private boolean isMoving, amPm, disableTouch, hourFormat, firstRun = true, manualAdjust;
     private String hStr, mStr, amPmStr;
 
     private TimeChangedListener timeListener;
@@ -149,9 +153,12 @@ public class Picker extends View {
 
         if (firstRun) {
             Calendar cal = Calendar.getInstance();
+            month = cal.get(Calendar.MONTH);
+            day = cal.get(Calendar.DAY_OF_MONTH);
+            year = cal.get(Calendar.YEAR);
             minutes = cal.get(Calendar.MINUTE);
             hour = cal.get(Calendar.HOUR_OF_DAY) % 12;
-            initTime(hour, minutes);
+            initTime(month, day, year, hour, minutes);
         } else {
             //Rad to Deg
             degrees = (Math.toDegrees(angle) + 90) % 360;
@@ -166,20 +173,21 @@ public class Picker extends View {
                  * To avoid that if statement checks if time setting is done programmatically or
                  * by touch gestures.
                  */
-                if(manuelAdjust){
+
+                if(manualAdjust){
                     minutes = ((int) (degrees * 4)) % AN_HOUR_AS_MINUTES;
                     minutes = (minutes + (15 - (minutes % 15))) % 60;
-                    manuelAdjust = false;
+                    manualAdjust = false;
                 }
 
                 mStr = (minutes < 10) ? "0" + minutes : minutes + "";
                 amPmStr = "";
             } else {
-                if(manuelAdjust){
+                if(manualAdjust){
                     //get Minutes
                     minutes = ((int) (degrees * 2)) % AN_HOUR_AS_MINUTES;
                     minutes = (minutes + (15 - (minutes % 15))) % 60;
-                    manuelAdjust = false;
+                    manualAdjust = false;
                 }
 
                 if(minutes == 0) {
@@ -192,6 +200,22 @@ public class Picker extends View {
                 if (hour == 0) hour = HALF_DAY_AS_HOURS;
 
                 mStr = (minutes < 10) ? "0" + minutes : minutes + "";
+
+
+                int militarytime = ((int) degrees / 15) % A_DAY_AS_HOURS;
+
+                if(mypreviousHour > 20 && (militarytime >= 0 && militarytime < 5)){
+                    myDate.add(Calendar.DAY_OF_MONTH, 1);
+                }
+
+                if(mypreviousHour < 5 && (militarytime <= 23 && militarytime > 20)){
+                    myDate.add(Calendar.DAY_OF_MONTH, -1);
+                }
+
+                mypreviousHour = militarytime;
+
+                //If someone moves the wheel too fast it will skip this and cause the AM/PM to not switch
+                //need to address later when I make the code above pretty
                 //AM-PM
                 if ((hour == 12 && previousHour == 11) || (hour == 11 && previousHour == 12)) {
                     amPm = !amPm;
@@ -237,7 +261,7 @@ public class Picker extends View {
     public boolean onTouchEvent(MotionEvent event) {
         if (disableTouch || !isEnabled()) return false;
 
-        manuelAdjust = true;
+        manualAdjust = true;
 
         getParent().requestDisallowInterceptTouchEvent(true);
 
@@ -296,7 +320,7 @@ public class Picker extends View {
         if (hourFormat) {
             return currentHour;
         } else {
-            if (amPm) {
+            if (amPm) { //true for AM
                 if (currentHour == 12) {
                     currentHour = 0;
                 }
@@ -312,6 +336,23 @@ public class Picker extends View {
 
     public int getCurrentMin() {
         return minutes;
+    }
+
+    public String getCurrentDatePretty() {
+        String dateString;
+
+        int tmp = hour;
+
+        if (!amPm) {
+            if (tmp < 12) tmp += 12;
+        } else {
+            if (tmp == 12) tmp = 0;
+        }
+        myDate.set(Calendar.HOUR_OF_DAY, tmp);
+        myDate.set(Calendar.MINUTE, minutes);
+        SimpleDateFormat format1 = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+        dateString = format1.format(myDate.getTime());
+        return dateString;
     }
 
     public void setTextColor(int textColor) {
@@ -375,7 +416,9 @@ public class Picker extends View {
         } else {
             if (tmp == 12) tmp = 0;
         }
-
+        calendar.set(Calendar.MONTH, month);
+        calendar.set(Calendar.DAY_OF_MONTH, day);
+        calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.HOUR_OF_DAY, tmp);
         calendar.set(Calendar.MINUTE, minutes);
         return calendar.getTime();
@@ -389,12 +432,25 @@ public class Picker extends View {
     public void setTouchEventListener(TouchEventListener touchEventListener) {
         this.touchEventListener = touchEventListener;
     }
-    /**
+    /***
+     * This method is used to set picker's time		       * This method is used to set picker's time
+        * @param calendar
+        */
+        public void setTime(Calendar calendar){
+
+               int am_pm = calendar.get(Calendar.AM_PM);
+
+//               this.amPm = am_pm != 0;
+               this.setTime(calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.YEAR),
+                             calendar.get(Calendar.HOUR),calendar.get(Calendar.MINUTE), am_pm == 0); //PM constant is 1
+            }
+
+     /***
      * This method is used to set picker's time
      * @param hour
      * @param minute
      */
-    public void setTime(int hour, int minute){
+    public void setTime(int month, int day, int year, int hour, int minute){
         if(!isTimeValid(hour, minute, true)){
             throw new IllegalStateException(getResources().getString(R.string.outOfRangeExceptionMessage));
         }
@@ -406,35 +462,50 @@ public class Picker extends View {
             amPm = !amPm;
         }
 
-        this.initTime(hour,minute);
+        this.initTime(month, day, year, hour,minute);
         this.invalidate();
     }
 
     /**
      * This method is used to set picker's time with AM/PM value
+     * @param month
+     * @param day
+     * @param year
      * @param hour
      * @param minute
      * @param midday
      */
-    public void setTime(int hour, int minute, boolean midday){
+    public void setTime(int month, int day, int year, int hour, int minute, boolean midday){
         if(!isTimeValid(hour, minute, false)){
             throw new IllegalStateException(getResources().getString(R.string.outOfRangeExceptionMessage2));
         }
 
         this.setHourFormat(false);
         this.amPm = midday;
-        this.initTime(hour,minute);
+        this.initTime(month, day, year, hour, minute);
         this.invalidate();
     }
 
     /***
      * This method is used to initialize picker's time
+     * @param month
+     * @param day
+     * @param year
      * @param hour
      * @param minutes
      */
-    private void initTime(int hour, int minutes) {
+    private void initTime(int month, int day, int year, int hour, int minutes) {
+        this.month = month;
+        this.day = day;
+        this.year = year;
         this.hour = hour;
         this.minutes = minutes;
+
+        myDate = Calendar.getInstance();
+        myDate.set(Calendar.MONTH, month);
+        myDate.set(Calendar.DAY_OF_MONTH,day);
+        myDate.set(Calendar.YEAR, year);
+
         this.firstRun = true;
         mStr = (minutes < 10) ? "0" + minutes : minutes + "";
         if (hourFormat) {
