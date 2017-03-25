@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -109,7 +110,14 @@ public class MainFragment extends Fragment{
                         minute = "0" + minute;
                     }
                     et.setText("It's " + picker1.getCurrentHour() + ":" + minute);
-                    et.setText(picker1.getCurrentDatePretty());
+                    et.setText(picker1.getTime().toString());
+                }
+            });
+
+            picker1.setTimeChangedListener(new TimeChangedListener() {
+                @Override
+                public void timeChanged(Date date) {
+                    Log.d("date", date.toString());
                 }
             });
         }

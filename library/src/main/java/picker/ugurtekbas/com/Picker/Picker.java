@@ -408,7 +408,6 @@ public class Picker extends View {
     }
 
     public Date getTime() {
-        Calendar calendar = Calendar.getInstance();
         int tmp = hour;
 
         if (!amPm) {
@@ -416,12 +415,10 @@ public class Picker extends View {
         } else {
             if (tmp == 12) tmp = 0;
         }
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, day);
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.HOUR_OF_DAY, tmp);
-        calendar.set(Calendar.MINUTE, minutes);
-        return calendar.getTime();
+
+        myDate.set(Calendar.HOUR_OF_DAY, tmp);
+        myDate.set(Calendar.MINUTE, minutes);
+        return myDate.getTime();
     }
 
     public void setTimeChangedListener(TimeChangedListener timeChangedListener) {
