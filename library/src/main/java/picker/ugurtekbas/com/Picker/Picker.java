@@ -149,7 +149,7 @@ public class Picker extends View {
         if (firstRun) {
             Calendar cal = Calendar.getInstance();
             minutes = cal.get(Calendar.MINUTE);
-            hour = cal.get(Calendar.HOUR_OF_DAY);
+            hour = cal.get(Calendar.HOUR_OF_DAY) % 12;
             initTime(hour, minutes);
         } else {
             //Rad to Deg
@@ -167,6 +167,7 @@ public class Picker extends View {
                  */
                 if(manuelAdjust){
                     minutes = ((int) (degrees * 4)) % AN_HOUR_AS_MINUTES;
+                    minutes = (minutes + (15 - (minutes % 15))) % 60;
                     manuelAdjust = false;
                 }
 
@@ -176,10 +177,17 @@ public class Picker extends View {
                 if(manuelAdjust){
                     //get Minutes
                     minutes = ((int) (degrees * 2)) % AN_HOUR_AS_MINUTES;
+                    minutes = (minutes + (15 - (minutes % 15))) % 60;
                     manuelAdjust = false;
                 }
 
-                hour = ((int) degrees / 30) % HALF_DAY_AS_HOURS;
+                if(minutes == 0) {
+                    if ((degrees / 30) % 1 > .7){
+                        hour = (((int) degrees / 30) % HALF_DAY_AS_HOURS) + 1 ;
+                    }
+                }else {
+                    hour = ((int) degrees / 30) % HALF_DAY_AS_HOURS;
+                }
                 if (hour == 0) hour = HALF_DAY_AS_HOURS;
 
                 mStr = (minutes < 10) ? "0" + minutes : minutes + "";
