@@ -99,7 +99,11 @@ public class MainFragment extends Fragment{
             final Button btn  =   (Button)v.findViewById(R.id.btn);
 
             Calendar cal = Calendar.getInstance();
-
+            cal.set(Calendar.MONTH,3);
+            cal.set(Calendar.DAY_OF_MONTH,27);
+            cal.set(Calendar.YEAR,2017);
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 30);
             picker1.setTime(cal);
 
             btn.setOnClickListener(new View.OnClickListener() {

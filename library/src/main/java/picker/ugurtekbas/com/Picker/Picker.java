@@ -158,6 +158,7 @@ public class Picker extends View {
             day = cal.get(Calendar.DAY_OF_MONTH);
             year = cal.get(Calendar.YEAR);
             minutes = cal.get(Calendar.MINUTE);
+            mypreviousHour = cal.get(Calendar.HOUR_OF_DAY);
             hour = cal.get(Calendar.HOUR_OF_DAY) % 12;
             initTime(month, day, year, hour, minutes);
         } else {
@@ -510,6 +511,7 @@ public class Picker extends View {
         myDate.set(Calendar.MONTH, month);
         myDate.set(Calendar.DAY_OF_MONTH,day);
         myDate.set(Calendar.YEAR, year);
+        mypreviousHour = hour;
 
         this.firstRun = true;
         mStr = (minutes < 10) ? "0" + minutes : minutes + "";
