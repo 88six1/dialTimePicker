@@ -11,6 +11,7 @@ import android.graphics.RectF;
 import android.graphics.Xfermode;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -202,7 +203,14 @@ public class Picker extends View {
                 mStr = (minutes < 10) ? "0" + minutes : minutes + "";
 
 
-                int militarytime = ((int) degrees / 15) % A_DAY_AS_HOURS;
+                int militarytime = 0;
+
+                if (!amPm) {
+                    if (hour < 12) militarytime = hour + 12;
+                } else {
+                    if (hour == 12) militarytime = 0;
+                }
+
 
                 if(mypreviousHour > 20 && (militarytime >= 0 && militarytime < 5)){
                     myDate.add(Calendar.DAY_OF_MONTH, 1);

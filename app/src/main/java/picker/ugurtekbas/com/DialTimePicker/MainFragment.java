@@ -118,6 +118,7 @@ public class MainFragment extends Fragment{
                 @Override
                 public void timeChanged(Date date) {
                     Log.d("date", date.toString());
+                    et.setText(picker1.getTime().toString());
                 }
             });
         }
